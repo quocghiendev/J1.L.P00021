@@ -1,8 +1,8 @@
 /*
  * StudentController.java
  *
- * Phiên bản: 2.0
- * Ngày cập nhật: 14/10/2026
+ * Phiên bản: 2.2
+ * Ngày cập nhật: 16/10/2026
  * Tác giả: [Họ tên sinh viên] - [Mã sinh viên]
  *
  * Copyright (c) 2026 [Họ tên sinh viên]. All rights reserved.
@@ -16,9 +16,7 @@ package controller;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import model.Student;
 import view.StudentView;
@@ -31,14 +29,19 @@ import view.StudentView;
  * thống kê) trên danh sách Student, rồi yêu cầu View hiển thị kết quả.
  * <p>
  * Một mã sinh viên có thể xuất hiện ở nhiều bản ghi (mỗi bản ghi là một
- * khóa học sinh viên đã đăng ký), nhưng các bản ghi cùng mã phải cùng tên.
+ * khóa học sinh viên đã đăng ký). Các bản ghi cùng mã luôn cùng tên: khi
+ * thêm, tên phải khớp với bản ghi cũ; khi cập nhật, tên mới được đổi cho
+ * mọi bản ghi cùng mã.
  *
- * @version 2.0 14 Oct 2026
+ * @version 2.2 16 Oct 2026
  * @author [Họ tên sinh viên]
  */
 public class StudentController {
 
-    /** Số sinh viên tối thiểu phải nhập trước khi được phép dừng. */
+    /**
+     * Ngưỡng số sinh viên: khi danh sách có nhiều hơn ngưỡng này, chương
+     * trình mới hỏi người dùng có tiếp tục nhập hay không.
+     */
     private static final int MIN_STUDENTS = 10;
 
     /** Danh sách sinh viên đang được quản lý (lưu trong bộ nhớ). */
@@ -114,9 +117,11 @@ public class StudentController {
 
     /**
      * Thêm sinh viên vào danh sách.
-     * Người dùng phải nhập cho tới khi danh sách có ít nhất MIN_STUDENTS
-     * sinh viên. Từ đó trở đi, sau mỗi sinh viên chương trình hỏi có tiếp
-     * tục hay không: Y để nhập tiếp, N để quay về menu chính.
+     * Bản ghi sai tên so với mã đã có, hoặc trùng cả mã, học kỳ và khóa
+     * học, bị từ chối và người dùng phải nhập lại.
+     * Khi danh sách có nhiều hơn MIN_STUDENTS sinh viên, sau mỗi lần thêm
+     * chương trình hỏi có tiếp tục hay không: Y để nhập tiếp, N để quay
+     * về menu chính.
      */
     private void createStudents() {
         while (true) {
@@ -124,7 +129,7 @@ public class StudentController {
 
             String id = view.inputStudentId();
             Student student = view.inputStudentDetails(id);
-            String error = checkConflict(student, null);
+            String error = checkConflict(student);
 
             if (error != null) {
 
@@ -136,7 +141,7 @@ public class StudentController {
             students.add(student);
             view.showMessage("Student added successfully.");
 
-            if ((students.size() >= MIN_STUDENTS)
+            if ((students.size() > MIN_STUDENTS)
                     && !view.inputContinue()) {
                 return;
             }
@@ -144,7 +149,7 @@ public class StudentController {
     }
 
     /**
-     * Kiểm tra một bản ghi có mâu thuẫn với các bản ghi đã có hay không.
+     * Kiểm tra bản ghi mới có mâu thuẫn với các bản ghi đã có hay không.
      * <p>
      * Hai quy tắc, so sánh không phân biệt chữ hoa, chữ thường:
      * <ul>
@@ -153,32 +158,47 @@ public class StudentController {
      * </ul>
      *
      * @param candidate bản ghi cần kiểm tra
-     * @param ignored   bản ghi bỏ qua khi so sánh (bản ghi đang được cập
-     *                  nhật), hoặc null nếu không có
      * @return thông báo lỗi nếu có mâu thuẫn, ngược lại null
      */
-    private String checkConflict(Student candidate, Student ignored) {
-        for (Student student : students) {
-            if (student == ignored) {
-                continue;
-            }
-            if (!student.getId().equalsIgnoreCase(candidate.getId())) {
-                continue;
-            }
+    private String checkConflict(Student candidate) {
+        List<Student> sameId = findById(candidate.getId());
 
-            if (!student.getName().equalsIgnoreCase(
-                    candidate.getName())) {
-                return "ID " + candidate.getId() + " already belongs to "
-                        + student.getName() + ".";
-            }
-            if ((student.getSemester() == candidate.getSemester())
-                    && student.getCourseName().equalsIgnoreCase(
-                            candidate.getCourseName())) {
-                return "This student already has this course in semester "
-                        + candidate.getSemester() + ".";
-            }
+        /* Các bản ghi cùng mã luôn cùng tên nên chỉ cần xét bản ghi đầu. */
+        if (!sameId.isEmpty() && !sameId.get(0).getName().equalsIgnoreCase(
+                candidate.getName())) {
+            return "ID " + candidate.getId() + " already belongs to "
+                    + sameId.get(0).getName() + ".";
+        }
+        if (isDuplicate(candidate.getId(), candidate.getSemester(),
+                candidate.getCourseName(), null)) {
+            return "This record already exists.";
         }
         return null;
+    }
+
+    /**
+     * Kiểm tra đã có bản ghi nào trùng mã, học kỳ và khóa học hay chưa.
+     * Không cần so sánh tên vì các bản ghi cùng mã luôn cùng tên.
+     * So sánh mã và khóa học không phân biệt chữ hoa, chữ thường.
+     *
+     * @param id       mã sinh viên
+     * @param semester học kỳ
+     * @param course   tên khóa học
+     * @param ignored  bản ghi bỏ qua khi so sánh (bản ghi đang được cập
+     *                 nhật), hoặc null nếu không có
+     * @return true nếu đã có bản ghi trùng, ngược lại false
+     */
+    private boolean isDuplicate(String id, int semester, String course,
+            Student ignored) {
+        for (Student student : students) {
+            if ((student != ignored)
+                    && student.getId().equalsIgnoreCase(id)
+                    && (student.getSemester() == semester)
+                    && student.getCourseName().equalsIgnoreCase(course)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -216,8 +236,7 @@ public class StudentController {
         Collections.sort(list, new Comparator<Student>() {
             @Override
             public int compare(Student a, Student b) {
-                return a.getName().compareToIgnoreCase(
-                        b.getName());
+                return a.getName().compareToIgnoreCase(b.getName());
             }
         });
     }
@@ -287,21 +306,25 @@ public class StudentController {
 
     /**
      * Cập nhật bản ghi: nhập lại họ tên, học kỳ, khóa học (mã giữ
-     * nguyên). Dữ liệu mới không được mâu thuẫn với các bản ghi khác,
-     * nếu không việc cập nhật bị hủy và bản ghi giữ nguyên.
+     * nguyên). Nếu học kỳ và khóa học mới trùng một bản ghi khác của cùng
+     * mã thì việc cập nhật bị hủy và bản ghi giữ nguyên.
+     * Họ tên mới được áp dụng cho mọi bản ghi cùng mã.
      *
      * @param target bản ghi cần cập nhật
      */
     private void updateStudent(Student target) {
         Student updated = view.inputStudentDetails(target.getId());
-        String error = checkConflict(updated, target);
 
-        if (error != null) {
-            view.showMessage(error + " Update cancelled.");
+        if (isDuplicate(target.getId(), updated.getSemester(),
+                updated.getCourseName(), target)) {
+            view.showMessage("This record already exists. Update cancelled.");
             return;
         }
 
-        target.setName(updated.getName());
+        /* Đổi tên cho mọi bản ghi cùng mã để các bản ghi luôn khớp tên. */
+        for (Student student : findById(target.getId())) {
+            student.setName(updated.getName());
+        }
         target.setSemester(updated.getSemester());
         target.setCourseName(updated.getCourseName());
         view.showMessage("Student updated successfully.");
@@ -319,8 +342,8 @@ public class StudentController {
 
     /**
      * Thống kê và hiển thị số lần mỗi sinh viên học từng khóa học, theo
-     * dạng: tên | khóa học | tổng số. Thứ tự các dòng theo lần xuất hiện
-     * đầu tiên trong danh sách.
+     * dạng: tên | khóa học | tổng số. Mỗi cặp (tên, khóa học) chỉ xuất
+     * hiện một dòng, theo thứ tự xuất hiện đầu tiên trong danh sách.
      */
     private void report() {
         if (students.isEmpty()) {
@@ -328,31 +351,52 @@ public class StudentController {
             return;
         }
 
-        /* Khóa là "tên|khóa học", giá trị là số lần xuất hiện. */
-        Map<String, Integer> count = new LinkedHashMap<>();
+        view.showMessage("\nReport:");
+        for (int i = 0; i < students.size(); i++) {
+            Student current = students.get(i);
 
-        for (Student student : students) {
-            String key = student.getName() + "|"
-                    + student.getCourseName();
+            if (isReported(current, i)) {
+                continue;
+            }
 
-            if (count.containsKey(key)) {
-                count.put(key, count.get(key) + 1);
-            } else {
-                count.put(key, 1);
+            int total = 0;
+            for (Student student : students) {
+                if (isSameNameAndCourse(student, current)) {
+                    total++;
+                }
+            }
+            view.displayReportRow(current.getName(), current.getCourseName(),
+                    total);
+        }
+    }
+
+    /**
+     * Kiểm tra cặp (tên, khóa học) của một bản ghi đã được báo cáo ở
+     * dòng trước hay chưa, bằng cách tìm trong các bản ghi đứng trước nó.
+     *
+     * @param current bản ghi cần kiểm tra
+     * @param index   vị trí của bản ghi trong danh sách
+     * @return true nếu một bản ghi đứng trước đã có cùng tên và khóa học
+     */
+    private boolean isReported(Student current, int index) {
+        for (int i = 0; i < index; i++) {
+            if (isSameNameAndCourse(students.get(i), current)) {
+                return true;
             }
         }
+        return false;
+    }
 
-        view.showMessage("\nReport:");
-        for (Map.Entry<String, Integer> entry : count.entrySet()) {
-            String key = entry.getKey();
-
-            /*
-             * Tên khóa học không chứa dấu '|' nên cắt tại dấu '|' cuối
-             * cùng luôn tách đúng tên và khóa học.
-             */
-            int cut = key.lastIndexOf('|');
-            view.displayReportRow(key.substring(0, cut),
-                    key.substring(cut + 1), entry.getValue());
-        }
+    /**
+     * So sánh hai bản ghi có cùng tên và cùng khóa học hay không (không
+     * phân biệt chữ hoa, chữ thường).
+     *
+     * @param a bản ghi thứ nhất
+     * @param b bản ghi thứ hai
+     * @return true nếu cùng tên và cùng khóa học
+     */
+    private boolean isSameNameAndCourse(Student a, Student b) {
+        return a.getName().equalsIgnoreCase(b.getName())
+                && a.getCourseName().equalsIgnoreCase(b.getCourseName());
     }
 }
