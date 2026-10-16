@@ -1,0 +1,23 @@
+| Bước | Hàm | Chức năng của hàm | Dùng những gì đã viết | Trả về |
+|---|---|---|---|---|
+| 0 | Khung lớp, `run`, `runMenu` | Tạo danh sách và View, hiện menu, đọc lựa chọn 1-5, gọi đúng chức năng, bắt lỗi khi luồng nhập đóng | View (`showMenu`, `inputChoice`, `showMessage`) | `void` |
+| 1 | `findById` | Lấy tất cả bản ghi có cùng ID (không phân biệt hoa thường) | Không | `List<Student>` (rỗng nếu không có) |
+| 2 | `isDuplicate` | Kiểm tra đã có bản ghi trùng cả ID, học kỳ và khóa học chưa; bỏ qua bản ghi `ignored` khi đang cập nhật | Không | `boolean` |
+| 3 | `checkConflict` | Kiểm tra bản ghi mới có vi phạm 2 luật không: cùng ID phải cùng tên, không trùng ID + học kỳ + khóa học | Bước 1 (`findById`), bước 2 (`isDuplicate`) | `String` lỗi, hoặc `null` nếu hợp lệ |
+| 4 | `createStudents` | Chức năng 1: nhập sinh viên liên tục, từ chối bản ghi sai, khi quá 10 sinh viên thì hỏi có tiếp tục không | Bước 3 (`checkConflict`), View (`inputStudentId`, `inputStudentDetails`, `inputContinue`) | `void` |
+| 5 | `sortByName` | Sắp xếp một danh sách theo tên tăng dần, không phân biệt hoa thường | Không (`Collections.sort` + `Comparator`) | `void` (sắp xếp tại chỗ) |
+| 6 | `findAndSort` | Chức năng 2: lọc sinh viên theo tên chứa từ khóa, sắp xếp kết quả rồi hiển thị | Bước 5 (`sortByName`), View (`inputSearchName`, `displayStudents`) | `void` |
+| 7 | `selectRecord` | Chọn một bản ghi trong số các bản ghi cùng ID: có một thì lấy luôn, nhiều thì cho người dùng chọn theo số | View (`displayRecords`, `inputRecordNumber`) | `Student` được chọn |
+| 8 | `deleteStudent` | Xóa một bản ghi khỏi danh sách | Không | `void` |
+| 9 | `updateStudent` | Nhập lại tên, học kỳ, khóa học; hủy nếu trùng bản ghi khác; đổi tên cho mọi bản ghi cùng ID | Bước 1 (`findById`), bước 2 (`isDuplicate`), View (`inputStudentDetails`) | `void` |
+| 10 | `updateOrDelete` | Chức năng 3: tìm theo ID, chọn bản ghi, hỏi Update hay Delete rồi gọi hàm tương ứng | Bước 1, 7, 8, 9, View (`inputStudentId`, `inputUpdateOrDelete`) | `void` |
+| 11a | `isSameNameAndCourse` | So sánh hai bản ghi có cùng tên và cùng khóa học không | Không | `boolean` |
+| 11b | `isReported` | Kiểm tra cặp (tên, khóa học) của một bản ghi đã được in ở dòng trước chưa, bằng cách xét các bản ghi đứng trước nó | Bước 11a | `boolean` |
+| 11c | `report` | Chức năng 4: đếm số lần mỗi sinh viên học từng khóa học và in mỗi cặp một dòng | Bước 11a, 11b, View (`displayReportRow`) | `void` |
+
+## Cách đọc bảng
+
+- Cột "Dùng những gì đã viết" cho biết hàm đó **phụ thuộc** vào hàm nào. Chỉ viết hàm khi tất cả hàm nó phụ thuộc đã có sẵn.
+- Các hàm có "Không" ở cột phụ thuộc (bước 1, 2, 5, 8, 11a) là hàm lá, viết độc lập và test riêng được ngay.
+- Các hàm chức năng chính (bước 4, 6, 10, 11c) trả về `void` vì chúng chỉ điều phối và gọi View để in kết quả. Hàm trả giá trị (`List`, `boolean`, `String`, `Student`) là hàm phụ trợ để chúng dùng.
+- Hàm trả `boolean` và `String` là **hàm kiểm tra**, không sửa dữ liệu. Chỉ `createStudents`, `updateStudent` và `deleteStudent` mới thay đổi danh sách `students`.
