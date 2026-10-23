@@ -7,10 +7,6 @@ import util.Validation;
 
 public class StudentView {
 
-    private static final int MIN_STUDENTS_PER_INPUT = 10;
-
-    private static final int MAX_STUDENTS_PER_INPUT = 100;
-
     /**
      * Mẫu định dạng một dòng của bảng sinh viên.
      */
@@ -47,7 +43,7 @@ public class StudentView {
 
     public String inputStudentId() {
         showMessage("Enter ID:");
-        return validation.inputString();
+        return validation.inputStudentCode();
     }
 
     public Student inputStudentDetails(String id) {
