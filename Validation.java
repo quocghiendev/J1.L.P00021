@@ -1,8 +1,8 @@
 /*
  * Validation.java
  *
- * Phiên bản: 1.3
- * Ngày cập nhật: 30/09/2026
+ * Phiên bản: 1.4
+ * Ngày cập nhật: 28/10/2026
  * Tác giả: [Họ tên sinh viên] - [Mã sinh viên]
  *
  * Copyright (c) 2026 [Họ tên sinh viên]. All rights reserved.
@@ -15,17 +15,31 @@ package util;
 import java.util.Scanner;
 
 /**
- * Cung cấp các phương thức đọc dữ liệu có kiểm tra hợp lệ: chuỗi không rỗng, số
- * nguyên và số thực trong một khoảng cho trước.
+ * Cung cấp các phương thức đọc dữ liệu có kiểm tra hợp lệ: họ tên, mã sinh
+ * viên (dùng biểu thức chính quy), số nguyên trong một khoảng cho trước và
+ * lựa chọn một trong hai ký tự.
  * <p>
  * Lớp không in lời nhắc nhập; lời nhắc do View hiển thị qua showMessage trước
  * khi gọi. Khi dữ liệu sai, lớp báo lỗi và đọc lại cho tới khi hợp lệ, vì vậy
  * nơi gọi luôn nhận được giá trị đúng.
  *
- * @version 1.3 30 Sep 2026
+ * @version 1.4 28 Oct 2026
  * @author [Họ tên sinh viên]
  */
 public class Validation {
+
+    /**
+     * Mẫu mã sinh viên: tiền tố HE, HS hoặc HA, theo sau là đúng 6 chữ số
+     * (ví dụ HE205169). Tổng cộng 8 ký tự, phân biệt chữ hoa, chữ thường.
+     */
+    private static final String STUDENT_CODE_PATTERN = "^(HE|HS|HA)\\d{6}$";
+
+    /**
+     * Mẫu họ tên: chỉ gồm chữ cái (kể cả tiếng Việt có dấu) và dấu cách,
+     * không chứa chữ số hay ký tự đặc biệt. \p{L} khớp mọi chữ cái Unicode,
+     * \s khớp khoảng trắng.
+     */
+    private static final String NAME_PATTERN = "^[\\p{L}\\s]+$";
 
     /*
      * Chỉ dùng một Scanner cho toàn bộ chương trình. Tạo nhiều Scanner
@@ -67,7 +81,8 @@ public class Validation {
     }
 
     /**
-     * Đọc một chuỗi khác rỗng. Khoảng trắng ở hai đầu được loại bỏ.
+     * Đọc một họ tên hợp lệ: không rỗng, chỉ gồm chữ cái và dấu cách.
+     * Khoảng trắng ở hai đầu được loại bỏ.
      *
      * @return chuỗi người dùng nhập, đã loại bỏ khoảng trắng hai đầu
      * @throws IllegalStateException nếu luồng nhập đã đóng
@@ -76,97 +91,41 @@ public class Validation {
         while (true) {
             String input = readLine();
 
-            if (!input.isEmpty() && isLettersAndSpace(input)) {
+            if (input.matches(NAME_PATTERN)) {
                 return input;
             }
-            else if (input.isEmpty()) {
+            if (input.isEmpty()) {
                 System.out.println("Input not empty!");
-                System.out.println("Re-input: ");
-                continue;
+            } else {
+                System.out.println("Name must contain only letters and "
+                        + "spaces (no digits or special characters).");
             }
-            System.out.println("Must be String, Please! re-input:");
+            System.out.println("Re-input: ");
         }
     }
 
     /**
-     * Kiểm tra chuỗi chỉ gồm chữ cái và dấu cách.
-     *
-     * @param text chuỗi cần kiểm tra
-     * @return true nếu mọi ký tự là chữ cái hoặc dấu cách
-     */
-    private boolean isLettersAndSpace(String text) {
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-
-            if (!Character.isLetter(c) && (c != ' ')) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Đọc một mã sinh viên gồm 2 chữ cái rồi 6 chữ số (ví dụ HE205169). Sai
-     * định dạng thì báo lỗi và nhập lại.
+     * Đọc một mã sinh viên gồm tiền tố HE, HS hoặc HA rồi 6 chữ số
+     * (ví dụ HE205169). Sai định dạng thì báo lỗi và nhập lại.
      *
      * @return mã hợp lệ, đã loại bỏ khoảng trắng hai đầu
      * @throws IllegalStateException nếu luồng nhập đã đóng
      */
     public String inputStudentCode() {
         while (true) {
-
             String input = readLine();
 
-            if ((input.length() == 8)
-                    && isAllLetters(input, 0, 2)
-                    && isAllDigits(input, 2, 8)) {
+            if (input.matches(STUDENT_CODE_PATTERN)) {
                 return input;
-            } else if (input.isEmpty()) {
-                System.out.println("Input not empty!");
-                System.out.println("Re-input: ");
-                continue;
             }
-            System.out.println("Not format for ID!");
+            if (input.isEmpty()) {
+                System.out.println("Input not empty!");
+            } else {
+                System.out.println("Invalid ID! Must be HE, HS or HA followed "
+                        + "by 6 digits (e.g. HE205169).");
+            }
             System.out.println("Re-input: ");
         }
-    }
-
-    /**
-     * Kiểm tra các ký tự từ vị trí from đến to - 1 đều là chữ cái a-z, A-Z.
-     *
-     * @param text chuỗi cần kiểm tra
-     * @param from vị trí bắt đầu (tính cả)
-     * @param to vị trí kết thúc (không tính)
-     * @return true nếu mọi ký tự trong đoạn là chữ cái
-     */
-    private boolean isAllLetters(String text, int from, int to) {
-        for (int i = from; i < to; i++) {
-            char c = text.charAt(i);
-
-            if (!(((c >= 'A') && (c <= 'Z')) || ((c >= 'a') && (c <= 'z')))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Kiểm tra các ký tự từ vị trí from đến to - 1 đều là chữ số 0-9.
-     *
-     * @param text chuỗi cần kiểm tra
-     * @param from vị trí bắt đầu (tính cả)
-     * @param to vị trí kết thúc (không tính)
-     * @return true nếu mọi ký tự trong đoạn là chữ số
-     */
-    private boolean isAllDigits(String text, int from, int to) {
-        for (int i = from; i < to; i++) {
-            char c = text.charAt(i);
-
-            if ((c < '0') || (c > '9')) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -195,15 +154,24 @@ public class Validation {
         }
     }
 
+    /**
+     * Đọc một ký tự duy nhất và chỉ chấp nhận một trong hai ký tự cho trước
+     * (phân biệt chữ hoa, chữ thường).
+     *
+     * @param a ký tự được chấp nhận thứ nhất
+     * @param b ký tự được chấp nhận thứ hai
+     * @return ký tự hợp lệ người dùng nhập (a hoặc b)
+     * @throws IllegalStateException nếu luồng nhập đã đóng
+     */
     public char inputOneOf(char a, char b) {
         while (true) {
             String input = readLine();
+
             if (input.length() == 1
-                    && (input.charAt(0) == b || input.charAt(0) == a)) {
+                    && (input.charAt(0) == a || input.charAt(0) == b)) {
                 return input.charAt(0);
             }
-
-            System.out.println("please input only " + a + " or " + b);
+            System.out.println("Please input only " + a + " or " + b);
         }
     }
 }
