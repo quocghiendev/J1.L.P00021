@@ -32,7 +32,7 @@ public class Validation {
      * Mẫu mã sinh viên: tiền tố HE, HS hoặc HA, theo sau là đúng 6 chữ số
      * (ví dụ HE205169). Tổng cộng 8 ký tự, phân biệt chữ hoa, chữ thường.
      */
-    private static final String STUDENT_CODE_PATTERN = "^(HE|HS|HA)\\d{6}$";
+    private static final String STUDENT_CODE_PATTERN = "^(?i:HE|HS|HA)\\d{6}$";
 
     /**
      * Mẫu họ tên: chỉ gồm chữ cái (kể cả tiếng Việt có dấu) và dấu cách,
@@ -41,6 +41,7 @@ public class Validation {
      */
     private static final String NAME_PATTERN = "^[\\p{L}\\s]+$";
 
+    private static final String SEMESTER_PATTERN = "^(?i:SP|SU|FA)\\d{2}$";
     /*
      * Chỉ dùng một Scanner cho toàn bộ chương trình. Tạo nhiều Scanner
      * cùng đọc System.in có thể làm mất dữ liệu đệm giữa các lần nhập.
@@ -102,6 +103,24 @@ public class Validation {
             }
             System.out.println("Re-input: ");
         }
+    }
+    
+    public String inputSemester(){
+        while(true){
+            String input = readLine();
+            
+            if (input.matches(SEMESTER_PATTERN)) {
+                return input;
+            }
+            else if(input.isEmpty()){
+                System.out.println("Input not empty!");
+                System.out.print("Re-input: ");
+            }
+            
+            System.out.println("Semester invalid!");
+            System.out.print("Re-input: ");
+        }
+    
     }
 
     /**

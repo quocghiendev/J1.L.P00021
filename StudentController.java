@@ -129,9 +129,9 @@ public class StudentController {
 
             String id = view.inputStudentId();
             Student student = view.inputStudentDetails(id);
-            String error = checkConflict(student);
+            String error = checkConflict(student); // check các trường hợp tại đây 
 
-            if (error != null) {
+            if (error != null) { // nếu có th lỗi 
 
                 /* Bản ghi không hợp lệ: không thêm, yêu cầu nhập lại. */
                 view.showMessage(error + " Try again.");
@@ -141,7 +141,7 @@ public class StudentController {
             students.add(student);
             view.showMessage("Student added successfully.");
 
-            if ((students.size() > MIN_STUDENTS)
+            if ((students.size() > MIN_STUDENTS) // cho đến khi lớn hơn 10 và người dùng chọn N
                     && !view.inputContinue()) {
                 return;
             }
@@ -164,8 +164,8 @@ public class StudentController {
         List<Student> sameId = findById(candidate.getId());
 
         /* Các bản ghi cùng mã luôn cùng tên nên chỉ cần xét bản ghi đầu. */
-        if (!sameId.isEmpty() && !sameId.get(0).getName().equalsIgnoreCase(
-                candidate.getName())) {
+        if (!sameId.isEmpty() &&
+                !sameId.get(0).getName().equalsIgnoreCase(candidate.getName())) {
             return "ID " + candidate.getId() + " already belongs to "
                     + sameId.get(0).getName() + ".";
         }
@@ -188,12 +188,12 @@ public class StudentController {
      *                 nhật), hoặc null nếu không có
      * @return true nếu đã có bản ghi trùng, ngược lại false
      */
-    private boolean isDuplicate(String id, int semester, String course,
+    private boolean isDuplicate(String id, String semester, String course,
             Student ignored) {
         for (Student student : students) {
             if ((student != ignored)
                     && student.getId().equalsIgnoreCase(id)
-                    && (student.getSemester() == semester)
+                    && (student.getSemester().equalsIgnoreCase(semester) )
                     && student.getCourseName().equalsIgnoreCase(course)) {
                 return true;
             }

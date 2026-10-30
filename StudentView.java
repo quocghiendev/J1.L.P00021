@@ -50,10 +50,8 @@ public class StudentView {
         showMessage("Enter student name:");
         String name = validation.inputString();
 
-        showMessage("Enter semester (" + Student.MIN_SEMESTER + "-"
-                + Student.MAX_SEMESTER + "):");
-        int semester = validation.inputInt(Student.MIN_SEMESTER,
-                Student.MAX_SEMESTER);
+        showMessage("Enter semester" + ":");
+        String semester = validation.inputSemester();
 
         String course = inputCourse();
 
