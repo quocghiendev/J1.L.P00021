@@ -42,16 +42,17 @@ public class StudentView {
     }
 
     public String inputStudentId() {
-        showMessage("Enter ID:");
-        return validation.inputStudentCode();
+        return validation.inputString(Validation.STUDENT_CODE_PATTERN,"Enter ID:" , "Invalid ID! Must be HE, HS or HA followed "
+                        + "by 6 digits (e.g. HE205169).");
     }
 
     public Student inputStudentDetails(String id) {
-        showMessage("Enter student name:");
-        String name = validation.inputString();
+        String name = validation.inputString(Validation.NAME_PATTERN,
+                "Enter student name:","Name must contain only letters and "
+                        + "spaces (no digits or special characters).");
 
-        showMessage("Enter semester" + ":");
-        String semester = validation.inputSemester();
+        String semester = validation.inputString(Validation.SEMESTER_PATTERN,
+                "Enter semester: ", "Semester invalid!");
 
         String course = inputCourse();
 
@@ -69,18 +70,19 @@ public class StudentView {
     }
 
     public String inputSearchName() {
-        showMessage("Enter student name or a part of name:");
-        return validation.inputString();
+        return validation.inputString(Validation.NAME_PATTERN,
+                "Enter student name or a part of name:","Name must contain only letters and "
+                        + "spaces (no digits or special characters).");
     }
 
-    public boolean inputContinue() {
-        showMessage("Do you want to continue (Y/N)?");
-        return validation.inputOneOf('Y', 'N') == 'Y';
+    public String inputContinue() {
+        return validation.inputString("^(?i:Y|N)$", "Do you want to continue (Y/N)?", 
+                "Please input one of Y or N!");
     }
 
-    public char inputUpdateOrDelete() {
+    public String inputUpdateOrDelete() {
         showMessage("Do you want to update (U) or delete (D) student?");
-        return validation.inputOneOf('U', 'D');
+        return validation.inputString("^(?i:U|D)$", SEPARATOR, SEPARATOR);
     }
 
     public int inputRecordNumber(int max) {

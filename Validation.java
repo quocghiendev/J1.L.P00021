@@ -32,16 +32,16 @@ public class Validation {
      * Mẫu mã sinh viên: tiền tố HE, HS hoặc HA, theo sau là đúng 6 chữ số
      * (ví dụ HE205169). Tổng cộng 8 ký tự, phân biệt chữ hoa, chữ thường.
      */
-    private static final String STUDENT_CODE_PATTERN = "^(?i:HE|HS|HA)\\d{6}$";
+    public static final String STUDENT_CODE_PATTERN = "^(?i:HE|HS|HA)\\d{6}$";
 
     /**
      * Mẫu họ tên: chỉ gồm chữ cái (kể cả tiếng Việt có dấu) và dấu cách,
      * không chứa chữ số hay ký tự đặc biệt. \p{L} khớp mọi chữ cái Unicode,
      * \s khớp khoảng trắng.
      */
-    private static final String NAME_PATTERN = "^[\\p{L}\\s]+$";
+    public static final String NAME_PATTERN = "^[\\p{L}\\s]+$";
 
-    private static final String SEMESTER_PATTERN = "^(?i:SP|SU|FA)\\d{2}$";
+    public static final String SEMESTER_PATTERN = "^(?i:SP|SU|FA)\\d{2}$";
     /*
      * Chỉ dùng một Scanner cho toàn bộ chương trình. Tạo nhiều Scanner
      * cùng đọc System.in có thể làm mất dữ liệu đệm giữa các lần nhập.
@@ -82,70 +82,32 @@ public class Validation {
     }
 
     /**
-     * Đọc một họ tên hợp lệ: không rỗng, chỉ gồm chữ cái và dấu cách.
-     * Khoảng trắng ở hai đầu được loại bỏ.
+     * Đọc một họ tên hợp lệ: không rỗng, chỉ gồm chữ cái và dấu cách.Khoảng trắng ở hai đầu được loại bỏ.
      *
+     * @param regex
+     * @param massage
+     * @param error
      * @return chuỗi người dùng nhập, đã loại bỏ khoảng trắng hai đầu
      * @throws IllegalStateException nếu luồng nhập đã đóng
      */
-    public String inputString() {
+    public String inputString(String regex, String massage, String error) {
         while (true) {
+            System.out.println(massage);
             String input = readLine();
 
-            if (input.matches(NAME_PATTERN)) {
+            if (input.matches(regex)) {
                 return input;
             }
             if (input.isEmpty()) {
                 System.out.println("Input not empty!");
+                System.out.println("Re-input: ");
             } else {
-                System.out.println("Name must contain only letters and "
-                        + "spaces (no digits or special characters).");
+                System.out.println(error);
             }
             System.out.println("Re-input: ");
         }
     }
     
-    public String inputSemester(){
-        while(true){
-            String input = readLine();
-            
-            if (input.matches(SEMESTER_PATTERN)) {
-                return input;
-            }
-            else if(input.isEmpty()){
-                System.out.println("Input not empty!");
-                System.out.print("Re-input: ");
-            }
-            
-            System.out.println("Semester invalid!");
-            System.out.print("Re-input: ");
-        }
-    
-    }
-
-    /**
-     * Đọc một mã sinh viên gồm tiền tố HE, HS hoặc HA rồi 6 chữ số
-     * (ví dụ HE205169). Sai định dạng thì báo lỗi và nhập lại.
-     *
-     * @return mã hợp lệ, đã loại bỏ khoảng trắng hai đầu
-     * @throws IllegalStateException nếu luồng nhập đã đóng
-     */
-    public String inputStudentCode() {
-        while (true) {
-            String input = readLine();
-
-            if (input.matches(STUDENT_CODE_PATTERN)) {
-                return input;
-            }
-            if (input.isEmpty()) {
-                System.out.println("Input not empty!");
-            } else {
-                System.out.println("Invalid ID! Must be HE, HS or HA followed "
-                        + "by 6 digits (e.g. HE205169).");
-            }
-            System.out.println("Re-input: ");
-        }
-    }
 
     /**
      * Đọc một số nguyên nằm trong đoạn [min, max].
@@ -170,27 +132,6 @@ public class Validation {
                 /* Chuỗi nhập không phải số nguyên: báo lỗi và đọc lại. */
                 System.out.println("Please enter an integer:");
             }
-        }
-    }
-
-    /**
-     * Đọc một ký tự duy nhất và chỉ chấp nhận một trong hai ký tự cho trước
-     * (phân biệt chữ hoa, chữ thường).
-     *
-     * @param a ký tự được chấp nhận thứ nhất
-     * @param b ký tự được chấp nhận thứ hai
-     * @return ký tự hợp lệ người dùng nhập (a hoặc b)
-     * @throws IllegalStateException nếu luồng nhập đã đóng
-     */
-    public char inputOneOf(char a, char b) {
-        while (true) {
-            String input = readLine();
-
-            if (input.length() == 1
-                    && (input.charAt(0) == a || input.charAt(0) == b)) {
-                return input.charAt(0);
-            }
-            System.out.println("Please input only " + a + " or " + b);
         }
     }
 }

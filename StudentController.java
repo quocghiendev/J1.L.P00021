@@ -142,7 +142,7 @@ public class StudentController {
             view.showMessage("Student added successfully.");
 
             if ((students.size() > MIN_STUDENTS) // cho đến khi lớn hơn 10 và người dùng chọn N
-                    && !view.inputContinue()) {
+                    && !view.inputContinue().equals("Y")) {
                 return;
             }
         }
@@ -257,9 +257,9 @@ public class StudentController {
         }
 
         Student target = selectRecord(matches);
-        char action = view.inputUpdateOrDelete();
+        String action = view.inputUpdateOrDelete();
 
-        if (action == 'U') {
+        if (action.equals("U")) {
             updateStudent(target);
         } else {
             deleteStudent(target);
